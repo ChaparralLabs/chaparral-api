@@ -1,0 +1,67 @@
+# Projects & Databases
+
+## Projects
+
+A project groups a set of searches together. Each project belongs to your
+organization.
+
+### List projects
+
+```python
+from chaparral import Client
+
+client = Client()
+
+projects = client.list_projects()
+for p in projects:
+    print(p.id, p.name)
+```
+
+### Get a specific project
+
+```python
+project = client.get_project("proj_...")
+print(project.name, project.created_at)
+```
+
+### Create a project
+
+```python
+project = client.create_project(name="My experiment", description="DDA run May 2026")
+print(project.id)
+```
+
+### Delete a project
+
+```python
+client.delete_project("proj_...")
+```
+
+Deletion is permanent. All searches associated with the project are also
+removed.
+
+---
+
+## Databases (FASTA)
+
+A database is a FASTA protein sequence file uploaded to Chaparral. Databases
+are shared across projects within your organization.
+
+### List databases
+
+```python
+databases = client.list_databases()
+for db in databases:
+    print(db.id, db.name)
+```
+
+### Get a specific database
+
+```python
+db = client.get_database("db_...")
+print(db.name, db.created_at)
+```
+
+> **Note**: Database upload is not yet available in the SDK (v0.1).
+> Upload via the web UI at **Settings → Databases → Upload FASTA**.
+> Programmatic upload will be added in a future release.
