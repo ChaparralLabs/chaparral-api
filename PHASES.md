@@ -176,6 +176,28 @@ Normal `ch-backend` deploy to the testing environment:
 3. Publish `pip install chaparral` to PyPI.
 4. Announce to users.
 
+### Phase 9 — User how-to documentation
+
+Live in the `chaparral-api` repo under `docs/`. Written as standalone Markdown
+pages (no build tool required — readable on GitHub directly).
+
+Planned guides:
+
+| File | Audience | Content |
+|---|---|---|
+| `docs/quickstart.md` | All users | Install, get an API key, first script in 5 min |
+| `docs/authentication.md` | All users | Key format, env vars, `.env` file, key rotation, revocation |
+| `docs/projects.md` | Bioinformatics users | List/create/delete projects; upload FASTA databases |
+| `docs/search.md` | Bioinformatics users | Submit a search, poll status, download results |
+| `docs/error_handling.md` | Developers | Exception hierarchy, retry strategy, debugging tips |
+| `docs/examples/` | All users | Runnable `.py` scripts: batch search, result export, CI pipeline |
+
+Each guide follows the same structure:
+1. **Goal** — one-sentence description of what the user will accomplish.
+2. **Prerequisites** — SDK installed, API key set.
+3. **Step-by-step** — minimal working code with inline comments.
+4. **Reference** — links to relevant `Client` methods.
+
 ---
 
 ## Repository layout (current)
@@ -186,6 +208,16 @@ chaparral-api/                  ← this repo (Python SDK only)
 ├── README.md
 ├── PHASES.md
 ├── .env.example
+├── docs/
+│   ├── quickstart.md
+│   ├── authentication.md
+│   ├── projects.md
+│   ├── search.md
+│   ├── error_handling.md
+│   └── examples/
+│       ├── batch_search.py
+│       ├── export_results.py
+│       └── ci_pipeline.py
 ├── src/chaparral/
 │   ├── __init__.py             ← public surface
 │   ├── client.py               ← Client class
@@ -204,6 +236,7 @@ chaparral-api/                  ← this repo (Python SDK only)
 - [ ] Phase 6: deploy `ch-backend` to testing (next normal deploy).
 - [ ] Phase 7: end-to-end test.
 - [ ] Phase 8: prod deploy + PyPI publish.
+- [ ] Phase 9: user how-to docs (`docs/quickstart.md`, `docs/authentication.md`, `docs/projects.md`, `docs/search.md`, `docs/error_handling.md`, `docs/examples/`).
 - [ ] SDK: expand endpoint coverage (experiments, search submit, file upload, QC, results download).
 - [ ] SDK: async client wrapper (`AsyncClient`).
 - [ ] SDK: auto-retry with exponential backoff on `429`.
