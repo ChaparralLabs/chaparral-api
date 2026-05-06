@@ -1,0 +1,2 @@
+# Marker file so type-checkers (mypy, pyright) treat `chaparral` as a typed
+# package and surface the inline annotations to downstream users.
