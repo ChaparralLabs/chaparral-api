@@ -1,4 +1,28 @@
-# Projects & Databases
+# Projects, Databases & Organization
+
+## Organization
+
+Each API key belongs to a single organization. Use `get_organization` to retrieve
+your organization's ID and name.
+
+```python
+from chaparral import Client
+
+client = Client()
+
+org = client.get_organization()
+print(org.id, org.name, org.created_at)
+```
+
+**Returns:** `Organization`
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `str` | Organization ID |
+| `name` | `str` | Organization name |
+| `created_at` | `datetime \| None` | Creation timestamp |
+
+---
 
 ## Projects
 

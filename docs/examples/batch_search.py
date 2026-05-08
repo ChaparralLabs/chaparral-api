@@ -32,7 +32,7 @@ def main() -> None:
                 continue
 
             print(f"{sid}: {result.status}")
-            if result.status in ("complete", "failed"):
+            if result.status in ("completed", "failed"):
                 done.add(sid)
 
         pending -= done
