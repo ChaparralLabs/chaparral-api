@@ -6,16 +6,6 @@ API keys are the credential that lets external code (scripts, pipelines,
 notebooks, CI systems) talk to Chaparral on your behalf — without requiring
 your password or a browser session.
 
-**Common use cases for customers:**
-
-| Scenario | Why an API key |
-|---|---|
-| Automated pipeline (Nextflow, Snakemake, batch scripts) | Submit searches and poll results unattended, overnight or on a cluster |
-| Jupyter / R notebooks | Pull search results and FASTA databases directly into analysis without copy-pasting files |
-| CI/CD (GitHub Actions, GitLab CI) | Regression tests that run a real search and assert expected PSM counts |
-| Shared lab server | One key per project or person — revoke individually if someone leaves, no password reset needed |
-| Third-party integrations | Vendor tools or LIMS systems that push data into Chaparral |
-
 ---
 
 ## Installation
