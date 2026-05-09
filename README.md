@@ -1,4 +1,4 @@
-# chaparral
+# Chaparral Python SDK
 
 Official Python client for the [Chaparral](https://chaparral.ai) proteomics
 mass-spectrometry platform.
