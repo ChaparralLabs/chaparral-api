@@ -10,7 +10,8 @@ mass-spectrometry platform.
 | [Quickstart](quickstart.md) | Install, get an API key, run your first script |
 | [Authentication](authentication.md) | Key management, rotation, environments, programmatic key admin |
 | [Projects & Databases](projects.md) | Manage projects, FASTA databases, and your organization |
-| [Search Results](search.md) | Poll searches and check status |
+| [Experiments & Uploads](experiments.md) | Create experiments, upload raw files and mzparquet |
+| [Search Results](search.md) | Submit DDA/DIA/PRM searches, poll status |
 | [Error Handling](error_handling.md) | Exception hierarchy, retries, debugging |
 
 ## Examples

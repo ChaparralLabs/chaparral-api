@@ -51,13 +51,16 @@ page; revocation takes effect immediately.
 | `base_url`        | `CHAPARRAL_BASE_URL`   | `https://api.chaparral.ai`    |
 | `timeout`         | —                      | `30.0` seconds                |
 
-## Coverage (v0.1)
+## Coverage (v0.2)
 
 | Area              | Endpoints |
 |-------------------|-----------|
 | Organization      | `get_organization` |
 | Projects          | `list_projects`, `get_project`, `create_project`, `delete_project` |
-| Databases (FASTA) | `list_databases`, `get_database` |
+| Databases (FASTA) | `list_databases`, `get_database`, `upload_database` |
+| Experiments       | `list_experiments`, `list_experiments_by_project`, `get_experiment`, `create_experiment`, `delete_experiment` |
+| Raw files         | `list_raw_files`, `upload_raw_file`, `upload_mzparquet` |
+| Search submission | `submit_search` (DDA/Sage), `submit_search_dia` (DIA), `submit_search_prm` (PRM) |
 | Search results    | `list_search_results`, `get_search_result` |
 | API key admin     | `list_api_keys`, `create_api_key`, `revoke_api_key` |
 
@@ -69,7 +72,8 @@ file downloads) will be added in subsequent releases.
 - [Quickstart](docs/quickstart.md) — installation, API key, first script.
 - [Authentication](docs/authentication.md) — key rotation, `.env` files, multiple environments, programmatic key management.
 - [Projects, Databases & Organization](docs/projects.md) — manage projects, FASTA databases, and your organization.
-- [Search Results](docs/search.md) — poll searches and check status.
+- [Experiments & Uploads](docs/experiments.md) — create experiments, upload raw files and mzparquet.
+- [Search Results](docs/search.md) — submit DDA/DIA/PRM searches, poll status.
 - [Error Handling](docs/error_handling.md) — exception hierarchy, retries, debugging.
 - [Examples](docs/examples/) — runnable scripts for common tasks.
 

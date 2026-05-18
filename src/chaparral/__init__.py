@@ -25,8 +25,10 @@ from chaparral.models import (
     ApiKey,
     CreatedApiKey,
     Database,
+    Experiment,
     Organization,
     Project,
+    RawFile,
     SearchResult,
 )
 
@@ -38,11 +40,13 @@ __all__ = [
     "Client",
     "CreatedApiKey",
     "Database",
+    "Experiment",
     "NotFoundError",
     "Organization",
     "Project",
+    "RawFile",
     "RateLimitError",
     "SearchResult",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

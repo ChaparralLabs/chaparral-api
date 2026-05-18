@@ -50,7 +50,45 @@ else:
     print("Search failed")
 ```
 
-> **Note**: Search submission (uploading raw files and triggering a new search)
-> is not yet available in the SDK (v0.1). Submit searches via the web UI at
-> [app.chaparral.ai](https://app.chaparral.ai). Programmatic submission will be
-> added in a future release.
+## Submit a DDA (Sage) search
+
+```python
+client.submit_search("exp_...", "proj_...", {
+    "database": {
+        "fasta": "fasta_...",          # database ID returned by upload_database
+        "enzyme": {"missed_cleavages": 1},
+        "static_mods": [{"residue": "C", "monoisotopic_mass": 57.021464}],
+        "variable_mods": [{"residue": "M", "monoisotopic_mass": 15.994915}],
+        "decoy_tag": "rev_",
+    },
+    "precursor_tol": {"ppm": [-20, 20]},
+    "fragment_tol": {"ppm": [-20, 20]},
+    "report_psms": 1,
+})
+```
+
+## Submit a DIA search
+
+```python
+client.submit_search_dia("exp_...", "proj_...", {
+    "database": {
+        "spectral_lib": "spectral_lib_...",  # spectral library ID
+        "params": {
+            "smoothing": True,
+            "min_points_per_peak": "3",
+        },
+    },
+})
+```
+
+## Submit a PRM search
+
+```python
+client.submit_search_prm("exp_...", "proj_...", {
+    "params": {
+        "ms1_ppm_tolerance": 10,
+        "ms2_ppm_tolerance": 10,
+        "use_lib_retention_time": True,
+    },
+})
+```

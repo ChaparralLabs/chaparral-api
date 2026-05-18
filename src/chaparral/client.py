@@ -8,7 +8,8 @@ that the user issues from the Chaparral web UI under Settings → API Keys.
 from __future__ import annotations
 
 import os
-from typing import Any, Iterable, List, Mapping, Optional
+import pathlib
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import httpx
 
@@ -22,9 +23,11 @@ from chaparral.models import (
     ApiKey,
     CreatedApiKey,
     Database,
+    Experiment,
     Json,
     Organization,
     Project,
+    RawFile,
     SearchResult,
 )
 
@@ -96,6 +99,7 @@ class Client:
         json: Optional[Any] = None,
         content: Optional[bytes] = None,
         headers: Optional[Mapping[str, str]] = None,
+        files: Optional[Any] = None,
     ) -> httpx.Response:
         try:
             resp = self._http.request(
@@ -105,6 +109,7 @@ class Client:
                 json=json,
                 content=content,
                 headers=headers,
+                files=files,
             )
         except httpx.HTTPError as exc:  # network / transport errors
             raise ApiError(str(exc), status_code=0) from exc
@@ -161,12 +166,139 @@ class Client:
     # ---------------------------------------------------------------- databases
     def list_databases(self) -> List[Database]:
         """List all FASTA databases visible to the caller."""
-        data = self._get_json("/fasta")
+        data = self._get_json("/databases")
         return [Database.model_validate(d) for d in data]
 
     def get_database(self, database_id: str) -> Database:
         """Fetch a single database by ID."""
-        return Database.model_validate(self._get_json(f"/fasta/{database_id}"))
+        return Database.model_validate(self._get_json(f"/databases/{database_id}"))
+
+    def upload_database(self, file_path: Union[str, pathlib.Path]) -> List[Database]:
+        """Upload a FASTA file and register it as a database.
+
+        Returns the list of created :class:`Database` records (one per file).
+        """
+        p = pathlib.Path(file_path)
+        with p.open("rb") as fh:
+            data = self._request(
+                "PUT",
+                "/databases",
+                files={"file": (p.name, fh, "application/octet-stream")},
+            ).json()
+        return [Database.model_validate(d) for d in data]
+
+    # -------------------------------------------------------------- experiments
+    def list_experiments(self) -> List[Experiment]:
+        """List all experiments visible to the caller."""
+        data = self._get_json("/experiments")
+        return [Experiment.model_validate(e) for e in data]
+
+    def list_experiments_by_project(self, project_id: str) -> List[Experiment]:
+        """List all experiments belonging to a project."""
+        data = self._get_json(f"/experiments/projects/{project_id}")
+        return [Experiment.model_validate(e) for e in data]
+
+    def get_experiment(self, experiment_id: str, project_id: str) -> Experiment:
+        """Fetch a single experiment by ID."""
+        return Experiment.model_validate(
+            self._get_json(f"/experiments/{experiment_id}/{project_id}")
+        )
+
+    def create_experiment(
+        self,
+        *,
+        name: str,
+        description: str = "",
+        project_id: str,
+        tags: Optional[List[str]] = None,
+    ) -> Experiment:
+        """Create a new experiment inside a project."""
+        body: dict[str, Any] = {"name": name, "description": description, "project_id": project_id}
+        if tags is not None:
+            body["tags"] = tags
+        data = self._request("POST", "/experiments", json=body).json()
+        return Experiment.model_validate(data)
+
+    def delete_experiment(self, experiment_id: str, project_id: str) -> None:
+        """Delete an experiment and all its associated files and searches."""
+        self._request("DELETE", f"/experiments/{experiment_id}/{project_id}")
+
+    # ----------------------------------------------------------- raw file upload
+    def list_raw_files(self, experiment_id: str, project_id: str) -> List[RawFile]:
+        """List raw files attached to an experiment."""
+        data = self._get_json(f"/experiments/{experiment_id}/{project_id}/files")
+        return [RawFile.model_validate(f) for f in data]
+
+    def upload_raw_file(
+        self,
+        experiment_id: str,
+        project_id: str,
+        file_path: Union[str, pathlib.Path],
+    ) -> None:
+        """Upload a raw MS file (e.g. ``.raw``, ``.mzML``, Bruker ``.d``) to an experiment.
+
+        The backend streams the file directly to S3 and automatically triggers
+        mzparquet conversion for Thermo ``.raw`` and Bruker files.
+        """
+        p = pathlib.Path(file_path)
+        with p.open("rb") as fh:
+            self._request(
+                "PUT",
+                f"/experiments/{experiment_id}/{project_id}/files",
+                files={"file": (p.name, fh, "application/octet-stream")},
+            )
+
+    def upload_mzparquet(
+        self,
+        experiment_id: str,
+        project_id: str,
+        file_path: Union[str, pathlib.Path],
+    ) -> None:
+        """Upload a pre-converted ``.mzparquet`` file to an experiment."""
+        p = pathlib.Path(file_path)
+        with p.open("rb") as fh:
+            self._request(
+                "PUT",
+                f"/experiments/{experiment_id}/{project_id}/files/mzparquet",
+                files={"file": (p.name, fh, "application/octet-stream")},
+            )
+
+    # ---------------------------------------------------------- search submission
+    def submit_search(self, experiment_id: str, project_id: str, params: Any) -> None:
+        """Submit a Sage DDA search job.
+
+        ``params`` is a dict matching the Sage search parameters JSON schema
+        (``database``, ``precursor_tol``, ``fragment_tol``, etc.).
+        """
+        self._request(
+            "POST",
+            f"/experiments/{experiment_id}/{project_id}/search",
+            json=params,
+        )
+
+    def submit_search_dia(self, experiment_id: str, project_id: str, params: Any) -> None:
+        """Submit a DIA search job.
+
+        ``params`` is a dict with at minimum a ``database`` key containing
+        the spectral library reference and DIA-specific parameters.
+        """
+        self._request(
+            "POST",
+            f"/experiments/{experiment_id}/{project_id}/search-dia",
+            json=params,
+        )
+
+    def submit_search_prm(self, experiment_id: str, project_id: str, params: Any) -> None:
+        """Submit a PRM search job.
+
+        ``params`` is a dict with a ``params`` key containing PRM-specific
+        settings (``ms1_ppm_tolerance``, ``ms2_ppm_tolerance``, etc.).
+        """
+        self._request(
+            "POST",
+            f"/experiments/{experiment_id}/{project_id}/search-prm",
+            json=params,
+        )
 
     # --------------------------------------------------------- search results
     def list_search_results(self) -> List[SearchResult]:

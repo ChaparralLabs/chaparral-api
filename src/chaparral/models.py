@@ -44,6 +44,38 @@ class Database(_Base):
     created_at: Optional[datetime] = None
 
 
+class Experiment(_Base):
+    """A collection of raw files and their associated searches."""
+
+    id: str
+    name: Optional[str] = None
+    description: Optional[str] = None
+    user_id: Optional[str] = None
+    organization_id: Optional[str] = None
+    project_id: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    tags: Optional[List[str]] = None
+    storage_bytes: Optional[int] = None
+    storage_status: Optional[str] = None
+
+
+class RawFile(_Base):
+    """A raw MS data file (or converted mzparquet) attached to an experiment."""
+
+    id: str
+    file: str
+    extension: str
+    size: int
+    project_id: str
+    experiment_id: Optional[str] = None
+    organization_id: str
+    created_at: datetime
+    job_id: Optional[str] = None
+    job_status: Optional[str] = None
+    storage_status: Optional[str] = None
+
+
 class SearchResult(_Base):
     id: str
     name: Optional[str] = None

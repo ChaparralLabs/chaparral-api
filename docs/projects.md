@@ -86,6 +86,5 @@ db = client.get_database("db_...")
 print(db.name, db.created_at)
 ```
 
-> **Note**: Database upload is not yet available in the SDK (v0.1).
-> Upload via the web UI at **Settings → Databases → Upload FASTA**.
-> Programmatic upload will be added in a future release.
+> **Note**: To upload a FASTA file programmatically use `client.upload_database("/path/to/file.fasta")`.
+> See [Experiments & Uploads](experiments.md) for details.
