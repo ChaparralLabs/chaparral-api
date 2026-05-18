@@ -25,7 +25,7 @@ The `status` field reflects the processing state of the search:
 |---|---|
 | `pending` | Queued, not yet started |
 | `running` | Currently processing |
-| `completed` | Finished successfully |
+| `complete` | Finished successfully |
 | `failed` | Processing error |
 
 ## Poll until complete
@@ -40,11 +40,11 @@ result_id = "srch_..."
 while True:
     result = client.get_search_result(result_id)
     print(f"Status: {result.status}")
-    if result.status in ("completed", "failed"):
+    if result.status in ("complete", "failed"):
         break
     time.sleep(10)
 
-if result.status == "completed":
+if result.status == "complete":
     print("Search finished:", result.id)
 else:
     print("Search failed")

@@ -14,7 +14,7 @@ def main() -> None:
     client = Client()
 
     results = client.list_search_results()
-    complete = [r for r in results if r.status == "completed"]
+    complete = [r for r in results if r.status == "complete"]
 
     if not complete:
         print("No complete search results found.")
