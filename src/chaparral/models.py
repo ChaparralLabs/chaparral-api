@@ -86,6 +86,26 @@ class SearchResult(_Base):
     created_at: Optional[datetime] = None
 
 
+class SpectralLib(_Base):
+    """A DIA/PRM spectral library."""
+
+    id: str
+    name: Optional[str] = None
+    organism: Optional[str] = None
+    organization_id: Optional[str] = None
+    created_at: Optional[datetime] = None
+    storage_status: Optional[str] = None
+
+
+class OrgUsage(_Base):
+    """Organization storage and usage statistics."""
+
+    storage_bytes: Optional[int] = None
+    storage_limit_bytes: Optional[int] = None
+    experiment_count: Optional[int] = None
+    user_count: Optional[int] = None
+
+
 class ApiKey(_Base):
     """API key metadata (the plaintext secret is never returned by list)."""
 

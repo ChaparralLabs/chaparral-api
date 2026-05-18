@@ -26,10 +26,12 @@ from chaparral.models import (
     CreatedApiKey,
     Database,
     Experiment,
+    OrgUsage,
     Organization,
     Project,
     RawFile,
     SearchResult,
+    SpectralLib,
 )
 
 __all__ = [
@@ -42,11 +44,13 @@ __all__ = [
     "Database",
     "Experiment",
     "NotFoundError",
+    "OrgUsage",
     "Organization",
     "Project",
     "RawFile",
     "RateLimitError",
     "SearchResult",
+    "SpectralLib",
 ]
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
