@@ -3,7 +3,7 @@
 ## Development setup
 
 ```bash
-git clone https://github.com/chaparral-ai/chaparral-api
+git clone https://github.com/ChaparralLabs/chaparral-api
 cd chaparral-api
 pip install -e ".[dev]"
 pytest

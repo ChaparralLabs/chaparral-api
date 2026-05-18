@@ -37,8 +37,8 @@ dev = [
 [project.urls]
 Homepage = "https://chaparral.ai"
 Documentation = "https://docs.chaparral.ai/python"
-Repository = "https://github.com/chaparral-ai/chaparral-api"
-Issues = "https://github.com/chaparral-ai/chaparral-api/issues"
+Repository = "https://github.com/ChaparralLabs/chaparral-api"
+Issues = "https://github.com/ChaparralLabs/chaparral-api/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/chaparral"]
