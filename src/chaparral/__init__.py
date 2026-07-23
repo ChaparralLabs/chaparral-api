@@ -28,10 +28,20 @@ from chaparral.models import (
     Experiment,
     OrgUsage,
     Organization,
+    Peptide,
+    PrmPeptide,
+    PrmQuantRow,
+    PrmXicRow,
     Project,
+    ProteinPsm,
+    PtmSite,
+    QcDashboard,
+    QcDashboardDia,
     RawFile,
+    SampleGroup,
     SearchResult,
     SpectralLib,
+    XicData,
 )
 
 __all__ = [
@@ -46,11 +56,21 @@ __all__ = [
     "NotFoundError",
     "OrgUsage",
     "Organization",
+    "Peptide",
+    "PrmPeptide",
+    "PrmQuantRow",
+    "PrmXicRow",
     "Project",
+    "ProteinPsm",
+    "PtmSite",
+    "QcDashboard",
+    "QcDashboardDia",
     "RawFile",
     "RateLimitError",
+    "SampleGroup",
     "SearchResult",
     "SpectralLib",
+    "XicData",
 ]
 
 __version__ = "0.3.0"

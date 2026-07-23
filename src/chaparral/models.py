@@ -128,3 +128,131 @@ class CreatedApiKey(ApiKey):
 
 # Generic alias for endpoints that return raw JSON we haven't modelled yet.
 Json = Any
+
+
+# ── QC models ─────────────────────────────────────────────────────────────────
+
+class QcDashboard(_Base):
+    """DDA QC summary dashboard returned by ``/search_results/:id/qc/dashboard``."""
+
+    protein_ids: Optional[int] = None
+    peptide_ids: Optional[int] = None
+    psm_count: Optional[int] = None
+    protein_fdr: Optional[float] = None
+    peptide_fdr: Optional[float] = None
+    median_precursor_ppm: Optional[float] = None
+    files: Optional[List[Any]] = None
+
+
+class QcDashboardDia(_Base):
+    """DIA QC summary dashboard returned by ``/search_results/:id/qc/dashboard_dia``."""
+
+    protein_ids: Optional[int] = None
+    peptide_ids: Optional[int] = None
+    median_cv: Optional[float] = None
+    missing_value_rate: Optional[float] = None
+    files: Optional[List[Any]] = None
+
+
+# ── Result row models ──────────────────────────────────────────────────────────
+
+class Peptide(_Base):
+    """A peptide identification row."""
+
+    peptide: Optional[str] = None
+    proteins: Optional[List[str]] = None
+    charge: Optional[int] = None
+    q_value: Optional[float] = None
+    score: Optional[float] = None
+    posterior_error: Optional[float] = None
+    hyperscore: Optional[float] = None
+    delta_next: Optional[float] = None
+    rt: Optional[float] = None
+    file: Optional[str] = None
+
+
+class ProteinPsm(_Base):
+    """A PSM (peptide-spectrum match) row for a given protein."""
+
+    peptide: Optional[str] = None
+    charge: Optional[int] = None
+    score: Optional[float] = None
+    q_value: Optional[float] = None
+    rt: Optional[float] = None
+    file: Optional[str] = None
+    scan_num: Optional[int] = None
+
+
+class PtmSite(_Base):
+    """A post-translational modification site."""
+
+    protein: Optional[str] = None
+    peptide: Optional[str] = None
+    residue: Optional[str] = None
+    position: Optional[int] = None
+    mass: Optional[float] = None
+    localization_score: Optional[float] = None
+    q_value: Optional[float] = None
+
+
+class XicPoint(_Base):
+    """A single point in an XIC chromatogram."""
+
+    rt: float
+    intensity: float
+
+
+class XicData(_Base):
+    """XIC chromatogram data for a precursor."""
+
+    precursor: Optional[str] = None
+    file: Optional[str] = None
+    apex_rt: Optional[float] = None
+    points: Optional[List[XicPoint]] = None
+
+
+# ── PRM models ─────────────────────────────────────────────────────────────────
+
+class PrmPeptide(_Base):
+    """A peptide row from a PRM search result."""
+
+    precursor: Optional[str] = None
+    proteins: Optional[str] = None
+    discriminant_score: Optional[float] = None
+    apex_rt: Optional[float] = None
+    q_value: Optional[float] = None
+
+
+class PrmQuantRow(_Base):
+    """A quantification data row from ``/search_results_prm/:id/quant``."""
+
+    peptide: Optional[str] = None
+    charge: Optional[int] = None
+    level: Optional[str] = None
+    replicate: Optional[int] = None
+    file_path: Optional[str] = None
+    response: Optional[float] = None
+
+
+class PrmXicRow(_Base):
+    """An XIC row from ``/search_results_prm/:id/xic``."""
+
+    precursor: Optional[str] = None
+    proteins: Optional[str] = None
+    path: Optional[str] = None
+    discriminant_score: Optional[float] = None
+    apex_rt: Optional[float] = None
+    rt_start: Optional[float] = None
+    rt_end: Optional[float] = None
+    retention_times: Optional[str] = None
+    fragment_intensities: Optional[str] = None
+
+
+# ── Pathway / GO models ────────────────────────────────────────────────────────
+
+class SampleGroup(_Base):
+    """A sample group assignment for multi-condition analysis."""
+
+    file: Optional[str] = None
+    group: Optional[str] = None
+    label: Optional[str] = None

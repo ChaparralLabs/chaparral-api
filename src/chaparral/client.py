@@ -28,10 +28,20 @@ from chaparral.models import (
     Json,
     OrgUsage,
     Organization,
+    Peptide,
+    PrmPeptide,
+    PrmQuantRow,
+    PrmXicRow,
     Project,
+    ProteinPsm,
+    PtmSite,
+    QcDashboard,
+    QcDashboardDia,
     RawFile,
+    SampleGroup,
     SearchResult,
     SpectralLib,
+    XicData,
 )
 
 DEFAULT_BASE_URL = "https://api.chaparral.ai"
@@ -581,3 +591,221 @@ class Client:
     def create_search_params(self, params: Any) -> Json:
         """Save a search parameter template for reuse."""
         return self._request("POST", "/search_params", json=params).json()
+
+    # ------------------------------------------------------- spectral lib tools
+    def generate_spectral_lib(
+        self,
+        spectral_lib_id: str,
+        *,
+        search_result_id: Optional[str] = None,
+        params: Optional[Any] = None,
+    ) -> None:
+        """Trigger spectral library generation from a DDA search result.
+
+        ``params`` is a dict of generation parameters (smoothing, min points, etc.).
+        Pass *search_result_id* to generate from a specific DDA result.
+        """
+        body: dict[str, Any] = params or {}
+        if search_result_id is not None:
+            body.setdefault("search_result_id", search_result_id)
+        self._request("POST", f"/spectral-libs/{spectral_lib_id}/generate", json=body)
+
+    def get_spectral_lib_download_url(self, spectral_lib_id: str) -> str:
+        """Return a presigned S3 URL to download a spectral library file."""
+        return self._get_json(f"/spectral-libs/{spectral_lib_id}/download")
+
+    # ----------------------------------------------------------------- QC methods
+    def qc_dashboard(self, search_result_id: str) -> QcDashboard:
+        """Return the DDA QC dashboard for a completed search.
+
+        Includes protein/peptide IDs, FDR, per-file precursor m/z accuracy.
+        """
+        return QcDashboard.model_validate(
+            self._get_json(f"/search_results/{search_result_id}/qc/dashboard")
+        )
+
+    def qc_dashboard_dia(self, search_result_id: str) -> QcDashboardDia:
+        """Return the DIA QC dashboard for a completed search.
+
+        Includes protein/peptide IDs, CV distribution, missing value rate.
+        """
+        return QcDashboardDia.model_validate(
+            self._get_json(f"/search_results/{search_result_id}/qc/dashboard_dia")
+        )
+
+    def qc_precursors(self, search_result_id: str) -> Json:
+        """Return per-file precursor m/z accuracy data."""
+        return self._get_json(f"/search_results/{search_result_id}/qc/precursors")
+
+    def qc_scores(self, search_result_id: str) -> Json:
+        """Return score histogram data for the search."""
+        return self._get_json(f"/search_results/{search_result_id}/qc/scores")
+
+    def qc_ids(self, search_result_id: str) -> Json:
+        """Return IDs-per-file breakdown."""
+        return self._get_json(f"/search_results/{search_result_id}/qc/ids")
+
+    # ----------------------------------------------------------------- peptides
+    def get_peptides(
+        self,
+        search_result_id: str,
+        *,
+        page: int = 1,
+        per_page: int = 100,
+    ) -> List[Peptide]:
+        """Return a paginated list of identified peptides.
+
+        Peptides are filtered at q-value < 0.01 by the server.
+        Use *page* / *per_page* to paginate large result sets.
+        """
+        data = self._get_json(
+            f"/search_results/{search_result_id}/peptides",
+            page=page,
+            per_page=per_page,
+        )
+        rows = data if isinstance(data, list) else data.get("peptides", data)
+        return [Peptide.model_validate(p) for p in rows]
+
+    # ----------------------------------------------------------------- proteins
+    def get_protein_psms(
+        self,
+        search_result_id: str,
+        protein: str,
+    ) -> List[ProteinPsm]:
+        """Return all PSMs for a specific protein in a DDA search."""
+        data = self._get_json(f"/search_results/{search_result_id}/protein/{protein}")
+        rows = data if isinstance(data, list) else data.get("psms", [])
+        return [ProteinPsm.model_validate(p) for p in rows]
+
+    def get_protein_psms_dia(
+        self,
+        search_result_id: str,
+        protein: str,
+    ) -> List[ProteinPsm]:
+        """Return all PSMs for a specific protein in a DIA search."""
+        data = self._get_json(f"/search_results/{search_result_id}/protein/{protein}/dia")
+        rows = data if isinstance(data, list) else data.get("psms", [])
+        return [ProteinPsm.model_validate(p) for p in rows]
+
+    # ----------------------------------------------------------------- PTM sites
+    def get_ptm_sites(
+        self,
+        search_result_id: str,
+        protein: str,
+    ) -> List[PtmSite]:
+        """Return PTM sites localised to a specific protein."""
+        data = self._get_json(
+            f"/search_results/{search_result_id}/protein/{protein}/ptm_sites"
+        )
+        rows = data if isinstance(data, list) else data.get("sites", [])
+        return [PtmSite.model_validate(s) for s in rows]
+
+    def get_all_ptm_sites(self, search_result_id: str) -> List[PtmSite]:
+        """Return all PTM sites across the entire search result."""
+        data = self._get_json(f"/search_results/{search_result_id}/ptm_sites")
+        rows = data if isinstance(data, list) else data.get("sites", [])
+        return [PtmSite.model_validate(s) for s in rows]
+
+    # ---------------------------------------------------------------------- XIC
+    def get_xic(self, search_result_id: str, precursor: str) -> XicData:
+        """Return XIC chromatogram data for a precursor ion.
+
+        *precursor* is typically in the format ``PEPTIDE/2`` (sequence/charge).
+        """
+        data = self._get_json(
+            f"/search_results/{search_result_id}/xic/{precursor}"
+        )
+        return XicData.model_validate(data)
+
+    # -------------------------------------------------------------- stream results
+    def stream_results(
+        self,
+        search_result_id: str,
+        *,
+        filters: Optional[Any] = None,
+    ) -> Any:
+        """Stream the full quantitative result set as a columnar payload.
+
+        Calls ``POST /search_results/:id/stream`` with optional *filters* dict
+        (e.g. ``{"q_value": 0.01}``).  Returns the raw JSON payload; install
+        ``pandas`` and ``pyarrow`` to deserialise Parquet responses.
+        """
+        resp = self._request(
+            "POST",
+            f"/search_results/{search_result_id}/stream",
+            json=filters or {},
+        )
+        content_type = resp.headers.get("content-type", "")
+        if "application/json" in content_type:
+            return resp.json()
+        # Parquet binary — return bytes for the caller to deserialise
+        return resp.content
+
+    # -------------------------------------------------------------- GO / pathway
+    def get_go_data(self, search_result_id: str) -> Json:
+        """Return pre-computed GO enrichment data, or ``None`` if not yet generated."""
+        return self._get_json(f"/search_results/{search_result_id}/go")
+
+    def trigger_go_analysis(self, search_result_id: str) -> None:
+        """Trigger GO term enrichment analysis for a search result."""
+        self._request("POST", f"/search_results/{search_result_id}/go")
+
+    def get_pathway_data(self, search_result_id: str) -> Json:
+        """Return pre-computed Reactome pathway data, or ``None`` if not yet generated."""
+        return self._get_json(f"/search_results/{search_result_id}/pathway")
+
+    def trigger_pathway_analysis(self, search_result_id: str) -> None:
+        """Trigger Reactome pathway enrichment analysis for a search result."""
+        self._request("POST", f"/search_results/{search_result_id}/pathway")
+
+    def get_reactome_mapping(self, search_result_id: str) -> Json:
+        """Return Reactome protein-to-pathway mapping for a search result."""
+        return self._get_json(f"/search_results/{search_result_id}/reactome_mapping")
+
+    # --------------------------------------------------------------- PRM results
+    def get_prm_peptides(
+        self,
+        search_result_id: str,
+        *,
+        page: int = 1,
+        per_page: int = 100,
+    ) -> List[PrmPeptide]:
+        """Return paginated peptide results from a PRM search."""
+        data = self._get_json(
+            f"/search_results_prm/{search_result_id}/peptides",
+            page=page,
+            per_page=per_page,
+        )
+        rows = data if isinstance(data, list) else data.get("peptides", data)
+        return [PrmPeptide.model_validate(p) for p in rows]
+
+    def get_prm_quant(self, search_result_id: str) -> List[PrmQuantRow]:
+        """Return quantification data (H/L ratios or intensities) from a PRM search."""
+        data = self._get_json(f"/search_results_prm/{search_result_id}/quant")
+        rows = data if isinstance(data, list) else data.get("rows", [])
+        return [PrmQuantRow.model_validate(r) for r in rows]
+
+    def get_prm_xic(self, search_result_id: str) -> List[PrmXicRow]:
+        """Return XIC chromatogram rows from a PRM search."""
+        data = self._get_json(f"/search_results_prm/{search_result_id}/xic")
+        rows = data if isinstance(data, list) else data.get("rows", [])
+        return [PrmXicRow.model_validate(r) for r in rows]
+
+    # ------------------------------------------------------------ sample groups
+    def get_sample_groups(self, search_result_id: str) -> List[SampleGroup]:
+        """Return sample group assignments for a search result."""
+        data = self._get_json(f"/search_results/{search_result_id}/groups")
+        rows = data if isinstance(data, list) else data.get("groups", [])
+        return [SampleGroup.model_validate(g) for g in rows]
+
+    def save_sample_groups(
+        self,
+        search_result_id: str,
+        groups: List[Any],
+    ) -> None:
+        """Save sample group assignments for a search result."""
+        self._request(
+            "PUT",
+            f"/search_results/{search_result_id}/groups",
+            json=groups,
+        )
