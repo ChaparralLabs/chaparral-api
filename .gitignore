@@ -7,6 +7,6 @@ dist/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-.env
-.env.local
 *.log
+config.bat
+node_modules
