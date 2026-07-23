@@ -802,10 +802,14 @@ class Client:
         self,
         search_result_id: str,
         groups: List[Any],
-    ) -> None:
+    ) -> Json:
         """Save sample group assignments for a search result."""
-        self._request(
+        body = [
+            g.model_dump(exclude_none=True) if hasattr(g, "model_dump") else g
+            for g in groups
+        ]
+        return self._request(
             "PUT",
             f"/search_results/{search_result_id}/groups",
-            json=groups,
-        )
+            json=body,
+        ).json()
